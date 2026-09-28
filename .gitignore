@@ -1,0 +1,14 @@
+# 本机配置（含绝对路径 / 密钥），只提交 .example 模板
+tools.env
+.env
+
+# 运行产物（每次运行重新生成，且日志里会记录本机绝对路径）
+out/
+work/
+
+# Python
+__pycache__/
+*.pyc
+
+# agent 工具的本地配置（含本机路径）
+.claude/settings.local.json

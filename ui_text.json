@@ -1,0 +1,187 @@
+{
+  "_comment": "opti_demo UI 文案配置。所有面向用户的文本集中在此；改文案只动这个文件。占位符用 {name}（bash 用 fill()，Python 用 ui_text.fill()）。",
+
+  "prefix": {
+    "demo": "[demo]",
+    "demo_err": "[demo][ERROR]",
+    "llm": "[llm_agent]",
+    "llm_err": "[llm_agent][ERROR]",
+    "equiv": "[equiv]",
+    "equiv_err": "[equiv][ERROR]"
+  },
+
+  "tools": {
+    "unset": "未配置 {key}：请复制 tools.env.example 为 tools.env 并填写，或导出环境变量 {key}"
+  },
+
+  "demo": {
+    "help": "opti_demo —— LLM 辅助 RTL 优化的最小闭环（headless 版）\n\n闭环流程：\n  1) 基线评分：yosys 综合 -> abc+liberty 映射 -> 面积(µm²) 与逻辑深度(ltp)\n  2) LLM 生成：调用 llm_agent.py（学生可修改）生成优化后 RTL\n  3) 等价性验证：equiv_agent.py（激励 testbench -> iverilog 仿真 -> VCD 波形比对）\n  4) 优化评分：对优化后 RTL 重跑 (1)\n  5) 汇总报告：<outdir>/report.md\n\n用法：\n  ./run_demo.sh                 # 不带参数 -> 启动交互式\"配置选择\"（一路回车用默认）\n  ./run_demo.sh [--baseline <file.v>] [--top <module>] [--outdir <dir>]\n                [--no-equiv] [--equiv-tb file|llm|auto]\n  默认基线：case/rtl/opt_top.v\n\n开关：\n  --no-equiv          关闭等价性验证（跳过 step 3）\n  --equiv-tb file     等价性验证用 case 预置的激励 testbench（默认；找不到则降级 auto）\n  --equiv-tb llm      等价性验证用 LLM 生成激励 testbench\n  --equiv-tb auto     等价性验证用内置确定性激励 testbench（不走 LLM）\n  也可用环境变量：EQUIV_ENABLE=0/1、EQUIV_TB=file/llm/auto\n  -v, --verbose       啰嗦模式：每条消息附带来源 file:line（等价于 DEMO_VERBOSE=1）\n\n说明：\n  - 本机工具路径（yosys / liberty）在 tools.env 中配置，模板见 tools.env.example\n  - LLM 后端由 LLM_BACKEND 选择：claude-cli（默认，走本机 claude CLI）/ custom（自己在 call_llm_custom() 里实现）\n  - LLM 配置/调用在 llm_agent.py（.env -> 环境变量 -> settings.json 回退；模板见 .env.example）\n  - 等价性验证在 equiv_agent.py（激励 tb + iverilog 仿真 + VCD 波形比对）\n  - 所有 UI 文案集中在 ui_text.json（改文案只动这个文件）",
+
+    "unknown_arg": "未知参数: {arg}",
+    "invalid_choice": "无效选择: {choice}",
+    "invalid_equiv_tb": "参数 --equiv-tb 只能是 file/llm/auto（得到: {value}）",
+    "baseline_missing": "找不到基线 RTL: {path}",
+    "top_autodetect_failed": "无法探测顶层模块名，请用 --top 指定",
+
+    "yosys_missing": "找不到 yosys: {path}",
+    "yosys_fail": "yosys 综合/映射失败 ({tag})，详见 {log}",
+    "liberty_missing": "找不到工艺库 liberty: {path}",
+    "prompt_missing": "缺少 prompt 模板: {path}",
+    "llm_not_implemented": "配置已就绪，但 demo 没有内置这个后端的 LLM 客户端 —— 接下来请实现你自己的优化方法（见 llm_agent.py 的 call_llm_custom()）。",
+    "iverilog_missing": "未找到 iverilog（等价性验证需要）",
+
+    "tb_preset": "使用预置 tb: {path}",
+    "tb_degrade_auto": "未找到该 case 的预置 tb，file 模式自动降级为 auto",
+
+    "case_info": "case: {baseline}  (top={top})  out={outdir}",
+    "baseline_scoring": "基线评分 ...",
+    "baseline_result": "  基线: 面积={area} µm², 逻辑深度={depth}",
+    "llm_generating": "调用 llm_agent.py 生成优化 RTL ...",
+    "equiv_result": "等价性验证: {verdict}  (testbench 来源: {src})",
+    "equiv_disabled": "等价性验证: 已关闭 (--no-equiv)",
+    "opt_result": "  优化: 面积={area} µm², 逻辑深度={depth}",
+    "report_written": "报告已写入: {path}",
+    "equiv_reject": "等价性验证未通过，优化被拒绝",
+
+    "step": "===== [{n}/{total}] {title} =====",
+    "step1_title": "基线评分",
+    "step2_title": "LLM 生成优化 RTL",
+    "step3_title": "等价性验证",
+    "step4_title": "优化评分",
+    "step5_title": "汇总报告",
+    "tools_info": "工具路径: yosys={yosys}  liberty={liberty}",
+    "done": "流程结束，报告见: {report}",
+    "tips": "提示：要看每条消息的来源 file:line，加 -v/--verbose 重跑。",
+    "tips_eqlog": "提示：等价性细节（含逐端口波形比对）见 {eqlog}",
+
+    "interactive": {
+      "banner": "================ opti_demo 交互式配置 ================",
+      "hint": "（直接回车即用默认值；一路回车 = opt_top + 预置 tb 跑完整流程）",
+      "case_menu": "[1] 选择 case:\n  1) case/rtl/opt_top.v                                   (默认, 自包含 + 预置 tb)\n  2) case/bench/popcount3/popcount3_v1_behavioral.v       (组合)\n  3) case/bench/addsubz/addsubz_v1_behavioral.v           (组合)\n  4) case/bench/mult8/mult8_v1_behavioral.v               (组合, 8x8 乘法)\n  5) case/bench/mux2to1v/mux2to1v_v1_ternary.v            (组合, 100bit mux)\n  6) case/bench/mac8/mac8_v1_parallel_behavioral.v        (clk/rst/start/done)\n  7) case/bench/gcd/gcd_v1.v                              (clk/rst/start/done)\n  8) 手动输入 RTL 路径",
+      "choice_prompt": "  选择",
+      "case_path_prompt": "  RTL 路径: ",
+      "tb_menu": "[2] 等价性验证用的激励 testbench 来源:\n  1) 预置 tb（file，默认；用 case 自带的 stim_*.v）\n  2) LLM 生成（llm）\n  3) 内置确定性激励（auto）",
+      "equiv_menu": "[3] 等价性验证:\n  1) 开启（默认）\n  2) 关闭",
+      "top_prompt": "[4] 顶层模块名（留空 = 自动探测）",
+      "outdir_prompt": "[5] 输出目录",
+      "footer": "====================================================="
+    }
+  },
+
+  "report": {
+    "title": "# RTL 优化闭环报告",
+    "generated_at": "生成时间: {ts}",
+    "baseline_line": "基线: `{baseline}`  (top=`{top}`)",
+    "section_scores": "## 评分结果（yosys 综合 + Nangate 工艺库映射）",
+    "table_header": "| 指标 | 基线 | 优化后 | 变化 |",
+    "table_sep": "|---|---|---|---|",
+    "row_area": "| 面积 (µm²) | {base} | {opt} | {delta} |",
+    "row_depth": "| 逻辑深度 (ltp, 越小越快) | {base} | {opt} | {delta} |",
+    "row_equiv": "| 等价性 (仿真+波形) | — | — | {equiv} |",
+    "section_conclusion": "## 结论",
+    "skip_warning": "- ⚠️ **未验证功能等价**（等价性检查已关闭）：仅比较面积/时序，接受与否不代表功能正确。",
+    "skip_state": "  - 面积：{area_state}；逻辑深度：{depth_state}。",
+    "area_down": "下降",
+    "area_not_down": "未下降",
+    "depth_ok": "未恶化",
+    "depth_bad": "恶化",
+    "accept": "- ✅ **接受**：功能等价，面积下降，逻辑深度未恶化。",
+    "reject_prefix": "- ❌ **拒绝**：",
+    "reject_sep": "；",
+    "reject_suffix": "。",
+    "reason_equiv": "等价性未通过（不可接受）",
+    "reason_area": "面积未下降",
+    "reason_depth": "逻辑深度恶化",
+    "note_ltp": "- 说明：无 OpenSTA，主频用 yosys `ltp` 最长拓扑路径深度作为代理。",
+    "equiv_note": "- 等价性验证：激励 testbench -> iverilog 仿真 -> VCD 波形逐时刻比对（testbench 实际来源: {src}），详情见 `{eqlog}`。",
+    "raw_note": "（LLM 原始响应见 `{resp}`）"
+  },
+
+  "equiv": {
+    "struct_mismatch": "结构不一致：",
+    "struct_ok": "端口结构一致（{n} 个端口）",
+    "struct_check_failed": "结构检查失败:",
+    "port_missing": "优化后缺少端口: {names}",
+    "port_extra": "优化后多出端口: {names}",
+    "port_dir": "端口 {name} 方向不一致: {gold} vs {opt}",
+    "port_width": "端口 {name} 位宽不一致: {gold} vs {opt}",
+
+    "llm_call": "调用 LLM 生成激励 testbench (model={model}) ...",
+    "llm_fail": "LLM 生成失败({err})",
+    "llm_exc": "LLM 生成异常({err})",
+    "no_module": "{tag}: 未找到 Verilog 模块源码",
+    "try_next": "{err}，尝试下一种",
+    "sim_fail": "{tag} testbench 仿真失败，尝试下一种:\n{err}",
+    "missing_ports": "{tag} testbench 未 dump 输出端口 {ports}，尝试下一种",
+    "all_failed": "所有 testbench 均失败:\n{err}",
+
+    "err_yosys_ports": "yosys 端口提取失败: {err}",
+    "err_no_top": "netlist 中找不到顶层模块 {top}",
+    "err_no_output": "顶层没有输出端口，无法比对",
+    "err_compile": "iverilog 编译失败:\n{log}",
+    "err_vvp": "vvp 仿真失败:\n{log}",
+    "err_no_vcd": "仿真结束但未生成波形文件（testbench 可能未 dump）",
+
+    "report_title": "# 等价性验证报告（仿真 + 波形比对）",
+    "report_top": "- 顶层: `{top}`  端口: {nport}  输出: {outs}",
+    "report_source": "- 激励来源: {src}   （testbench: `tb_{src}.v`）",
+    "report_verdict": "- 结论: **{verdict}**",
+    "report_section": "## 逐端口波形比对",
+    "source_token": "激励来源:",
+
+    "detail_match": "端口 {name}: 一致 ({n} 次翻转)",
+    "detail_missing": "端口 {name}: 波形缺失 (gold={g}, opt={o})",
+    "detail_diff": "端口 {name}: 首次差异 t={t} gold={g} opt={o}",
+    "has": "有",
+    "none": "无",
+
+    "cli": {
+      "description": "LLM 辅助的仿真等价性验证",
+      "gold": "基线 RTL",
+      "opt": "优化后 RTL",
+      "top": "顶层模块名",
+      "outdir": "中间产物目录",
+      "prompt": "激励 testbench 模板",
+      "raw": "LLM 原始响应输出路径",
+      "no_llm": "跳过 LLM，直接用内置激励",
+      "tb_file": "预置激励 testbench 文件（优先于 LLM/内置）"
+    }
+  },
+
+  "llm": {
+    "err_key": "claude-cli 后端需要 API Key，但 LLM_API_KEY 为占位符且未找到可用的 ANTHROPIC_AUTH_TOKEN",
+    "err_base_url": "claude-cli 后端需要 base_url，但 LLM_BASE_URL / ANTHROPIC_BASE_URL 都未配置",
+    "err_backend": "未知的 LLM_BACKEND: {backend}（可选: {known}）",
+    "err_prompt_ph": "prompt 模板缺少 {{RTL_SOURCE}} 占位符",
+    "err_claude": "未找到 claude CLI（LLM_BACKEND=claude-cli 需要它；想用别的模型请改成 custom）",
+    "err_timeout": "claude -p 调用超时",
+    "err_call_failed": "claude -p 失败 (code={code}): {stderr}",
+    "err_no_verilog": "未在 LLM 响应中找到 Verilog 模块源码",
+    "err_top": "优化结果中未定义顶层模块 {top}",
+
+    "src_dotenv": ".env:LLM_API_KEY",
+    "src_env": "env:ANTHROPIC_AUTH_TOKEN (降级)",
+    "src_settings": "~/.claude/settings.json (降级)",
+
+    "backend": "LLM 后端: {backend}",
+    "key_unset": "(未配置)",
+    "endpoint": "endpoint={base} model={model} key={key} ({source})",
+    "written": "已写出优化 RTL -> {out}",
+    "stream_start": "调用 claude -p 生成（model={model}），以下为实时输出（`|` 前缀 = claude 原始输出）...",
+    "stream_end": "claude -p 返回结束（收到 {n} 行），开始提取 Verilog ...",
+    "cmd": "$ {cmd}",
+    "custom_stub": "LLM_BACKEND=custom：demo 不内置第三方 LLM 客户端，请自己在 call_llm_custom() 里实现具体优化方法（函数注释里有标准库发 HTTP 请求的示例）。",
+
+    "cli": {
+      "description": "LLM 生成优化 RTL 的入口",
+      "baseline": "基线 RTL 文件",
+      "prompt": "prompt 模板文件",
+      "out": "优化后 RTL 输出路径",
+      "raw": "LLM 原始响应输出路径",
+      "top": "顶层模块名（用于校验）",
+      "env_file": "配置文件路径（默认 .env）",
+      "backend": "LLM 后端：claude-cli（本机 claude CLI）/ custom（自己实现）",
+      "timeout": "LLM 调用超时秒数"
+    }
+  }
+}
