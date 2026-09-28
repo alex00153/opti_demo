@@ -52,7 +52,7 @@ export ANTHROPIC_MODEL="你的模型名"
 
 在本项目根目录下启动 Agent，并输入：
 
-> **“根据readme.md，帮我部署这个demo”**
+> **“帮我根据 https://github.com/alex00153/opti_demo 中的readme.md 部署 opti_demo 项目”**
 
 Agent 会自动执行：
 1. 检查本机 `yosys`、`iverilog`、`python3` 等工具链；
@@ -104,7 +104,7 @@ demo 默认通过 `claude` CLI 驱动。若想换用任意 OpenAI 兼容模型�
    LLM_BACKEND=custom
    LLM_BASE_URL=https://api.deepseek.com
    LLM_API_KEY=sk-xxxx
-   LLM_MODEL=deepseek-chat
+   LLM_MODEL=deepseek-flash
    ```
 2. 在 `llm_agent.py` 的 `call_llm_custom()` 中填入网络请求（内置了免 `pip` 安装的标准库实现）：
    ```python
