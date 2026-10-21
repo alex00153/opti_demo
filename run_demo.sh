@@ -113,7 +113,15 @@ interactive_config() {
     5) BASELINE="$RTL_DIR/bench/mux2to1v/mux2to1v_v1_ternary.v" ;;
     6) BASELINE="$RTL_DIR/bench/mac8/mac8_v1_parallel_behavioral.v" ;;
     7) BASELINE="$RTL_DIR/bench/gcd/gcd_v1.v" ;;
-    8) printf '%s' "$UI_DEMO_INTERACTIVE_CASE_PATH_PROMPT" >&2; read -r BASELINE ;;
+    8) BASELINE="$RTL_DIR/bench/barrel/barrel_v1_mux.v" ;;
+    9) BASELINE="$RTL_DIR/bench/fp_round/fp_round_v1.v" ;;
+    10) BASELINE="$RTL_DIR/bench/fixed_sub/fixed_sub_v1.v" ;;
+    11) BASELINE="$RTL_DIR/bench/div16/div16_v1.v" ;;
+    12) BASELINE="$RTL_DIR/bench/accu/accu_v1.v" ;;
+    13) BASELINE="$RTL_DIR/bench/lifo/lifo_v1.v" ;;
+    14) BASELINE="$RTL_DIR/bench/adder64/adder64_v1_pipe.v" ;;
+    15) BASELINE="$RTL_DIR/bench/radix2_div/radix2_div_v1.v" ;;
+    16) printf '%s' "$UI_DEMO_INTERACTIVE_CASE_PATH_PROMPT" >&2; read -r BASELINE ;;
     *) printf '%s\n' "$(fill "$UI_DEMO_INVALID_CHOICE" "choice=$idx")" >&2; exit 1 ;;
   esac
   echo
