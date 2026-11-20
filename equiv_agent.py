@@ -15,8 +15,8 @@ testbench 来源优先级：`--tb-file`（预置） > `--no-llm`（内置） > L
 任何一级编译/仿真失败或未 dump 出输出端口，都会自动降级到下一级（最终兜底=内置激励）。
 
 用法：
-  python3 equiv_agent.py --gold base.v --opt optimized.v --top opt_top \
-      --outdir work/equiv [--tb-file case/rtl/stim_opt_top.v] [--no-llm] [--prompt ...]
+  python3 equiv_agent.py --gold base.v --opt optimized.v --top barrel_shifter \
+      --outdir work/equiv [--tb-file case/tb/case1_tb.v] [--no-llm] [--prompt ...]
 
 退出码：0=等价(PASS)，2=不等价(FAIL)，3=无法判定(ERROR)。
 """
@@ -118,7 +118,7 @@ def load_preset_tb(path: str) -> str:
     """载入预置激励 testbench，替换占位符。
 
     兼容两种写法：
-      - 平铺占位符 `__VCD__` / `__SEED__`（与 case/bench/tb/stim_*.v 一致）
+      - 平铺占位符 `__VCD__` / `__SEED__`（与 case/tb/case*_tb.v 一致）
       - 直接用宏 `` `VCD_PATH ``（本 agent 的写法）
     """
     text = open(path, encoding="utf-8").read()

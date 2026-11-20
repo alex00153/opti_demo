@@ -18,10 +18,10 @@ llm_agent.py —— LLM 生成优化 RTL 的入口（★ 学生主要修改这�
 
 用法：
   python3 llm_agent.py \
-      --baseline case/bench/mult8/mult8_v2_shiftadd_ripple.v \
+      --baseline case/case1/rtl.v \
       --prompt   prompts/rtl_optimize.md \
-      --out      out/mult8/optimized.v \
-      --raw      out/mult8/llm_response.md
+      --out      out/case1/optimized.v \
+      --raw      out/case1/llm_response.md
 
 学生可修改的入口：
   - build_prompt()      ：调整提示词与优化目标（面积/时序权衡等）

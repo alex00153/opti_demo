@@ -77,12 +77,12 @@ Agent 会自动执行：
 ```bash
 ./run_demo.sh
 ```
-按提示选择预置用例（一路直接按回车即以默认案例 `opt_top.v` 运行全流程）。
+按提示选择预置用例（一路直接按回车即以默认案例 `case/case1/rtl.v` 运行全流程）。
 
 ### 命令行模式
 ```bash
 # 运行指定 RTL 用例
-./run_demo.sh --baseline case/bench/mult8/mult8_v1_behavioral.v
+./run_demo.sh --baseline case/case1/rtl.v
 
 # 仅调试用：跳过等价性验证
 ./run_demo.sh --no-equiv
@@ -161,9 +161,9 @@ LIB_FILE=/home/<你的用户名>/edatools/NangateOpenCellLibrary_typical.lib
 YOSYS_BIN=$(sed -n 's/^YOSYS_BIN=//p' tools.env)
 LIB_FILE=$(sed -n 's/^LIB_FILE=//p' tools.env)
 
-"$YOSYS_BIN" -p "read_verilog -sv case/rtl/opt_top.v; \
+"$YOSYS_BIN" -p "read_verilog -sv case/case1/rtl.v; \
                 read_liberty -lib $LIB_FILE; \
-                hierarchy -top opt_top; proc; opt; techmap; opt; \
+                hierarchy -top barrel_shifter; proc; opt; techmap; opt; \
                 abc -liberty $LIB_FILE; stat -liberty $LIB_FILE; ltp" 2>&1 \
   | grep -E "Chip area|Longest topological path"
 ```
@@ -175,7 +175,7 @@ LIB_FILE=$(sed -n 's/^LIB_FILE=//p' tools.env)
 
 | 参数 / 变量 | 说明 | 默认值 |
 |---|---|---|
-| `--baseline <file>` | 基线 RTL 路径 | `case/rtl/opt_top.v` |
+| `--baseline <file>` | 基线 RTL 路径 | `case/case1/rtl.v` |
 | `--top <name>` | 顶层模块名 | 自动探测 |
 | `--outdir <dir>` | 产物输出路径 | `out/<case_name>` |
 | `--equiv-tb <mode>` | 激励源：`file` (预置) / `llm` (LLM生成) / `auto` (自动伪随机) | `file` |

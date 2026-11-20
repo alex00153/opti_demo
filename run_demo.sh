@@ -65,7 +65,7 @@ VVP_BIN="$(tools_get VVP_BIN)"; VVP_BIN="${VVP_BIN:-vvp}"
 export IVERILOG_BIN VVP_BIN
 
 PROMPT_FILE="$SCRIPT_DIR/prompts/rtl_optimize.md"
-BASELINE="$SCRIPT_DIR/case/rtl/opt_top.v"
+BASELINE="$SCRIPT_DIR/case/case1/rtl.v"
 TOP=""
 OUTDIR=""
 EQUIV_ENABLE="${EQUIV_ENABLE:-1}"   # 1=做等价性验证；0=跳过
@@ -89,7 +89,7 @@ done
 export DEMO_VERBOSE="$VERBOSE"
 
 # ---------------------------------------------------------------------------
-# 交互式"配置选择"：不带任何参数时进入；一路回车 = opt_top + 预置 tb 跑完整流程
+# 交互式"配置选择"：不带任何参数时进入；一路回车 = case1 + 预置 tb 跑完整流程
 # ---------------------------------------------------------------------------
 prompt_choice() {  # $1=提示 $2=默认值 -> 回显用户输入或默认值
   local ans
@@ -106,22 +106,15 @@ interactive_config() {
   echo "$UI_DEMO_INTERACTIVE_CASE_MENU"
   local idx; idx="$(prompt_choice "$UI_DEMO_INTERACTIVE_CHOICE_PROMPT" "1")"
   case "$idx" in
-    1) BASELINE="$RTL_DIR/rtl/opt_top.v" ;;
-    2) BASELINE="$RTL_DIR/bench/popcount3/popcount3_v1_behavioral.v" ;;
-    3) BASELINE="$RTL_DIR/bench/addsubz/addsubz_v1_behavioral.v" ;;
-    4) BASELINE="$RTL_DIR/bench/mult8/mult8_v1_behavioral.v" ;;
-    5) BASELINE="$RTL_DIR/bench/mux2to1v/mux2to1v_v1_ternary.v" ;;
-    6) BASELINE="$RTL_DIR/bench/mac8/mac8_v1_parallel_behavioral.v" ;;
-    7) BASELINE="$RTL_DIR/bench/gcd/gcd_v1.v" ;;
-    8) BASELINE="$RTL_DIR/bench/barrel/barrel_v1_mux.v" ;;
-    9) BASELINE="$RTL_DIR/bench/fp_round/fp_round_v1.v" ;;
-    10) BASELINE="$RTL_DIR/bench/fixed_sub/fixed_sub_v1.v" ;;
-    11) BASELINE="$RTL_DIR/bench/div16/div16_v1.v" ;;
-    12) BASELINE="$RTL_DIR/bench/accu/accu_v1.v" ;;
-    13) BASELINE="$RTL_DIR/bench/lifo/lifo_v1.v" ;;
-    14) BASELINE="$RTL_DIR/bench/adder64/adder64_v1_pipe.v" ;;
-    15) BASELINE="$RTL_DIR/bench/radix2_div/radix2_div_v1.v" ;;
-    16) printf '%s' "$UI_DEMO_INTERACTIVE_CASE_PATH_PROMPT" >&2; read -r BASELINE ;;
+    1) BASELINE="$RTL_DIR/case1/rtl.v" ;;
+    2) BASELINE="$RTL_DIR/case2/rtl.v" ;;
+    3) BASELINE="$RTL_DIR/case3/rtl.v" ;;
+    4) BASELINE="$RTL_DIR/case4/rtl.v" ;;
+    5) BASELINE="$RTL_DIR/case5/rtl.v" ;;
+    6) BASELINE="$RTL_DIR/case6/rtl.v" ;;
+    7) BASELINE="$RTL_DIR/case7/rtl.v" ;;
+    8) BASELINE="$RTL_DIR/case8/rtl.v" ;;
+    9) printf '%s' "$UI_DEMO_INTERACTIVE_CASE_PATH_PROMPT" >&2; read -r BASELINE ;;
     *) printf '%s\n' "$(fill "$UI_DEMO_INVALID_CHOICE" "choice=$idx")" >&2; exit 1 ;;
   esac
   echo
@@ -159,9 +152,9 @@ WORK_DIR="$SCRIPT_DIR/work/$(basename "$OUTDIR")"
 mkdir -p "$OUTDIR" "$WORK_DIR"
 
 resolve_tb_file() {  # $1=基线RTL(绝对) $2=顶层名 -> 回显预置 tb 路径，找不到则空
-  local base="$1" top="$2" d n c
-  d="$(dirname "$base")"; n="$(basename "$base")"; n="${n%.*}"
-  for c in "$d/stim_$n.v" "$d/stim_$top.v" "$SCRIPT_DIR/case/bench/tb/stim_$(basename "$d").v"; do
+  local base="$1" top="$2" d name c
+  d="$(dirname "$base")"; name="$(basename "$d")"
+  for c in "$SCRIPT_DIR/case/tb/${name}_tb.v" "$d/${name}_tb.v"; do
     if [ -f "$c" ]; then printf '%s' "$c"; return 0; fi
   done
   printf ''
